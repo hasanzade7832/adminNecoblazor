@@ -1,0 +1,25 @@
+﻿@typeparam TItem
+
+<FlexSplitter MinLeft="220"
+              MinRight="260"
+              PersistKey="master-detail-left-width"
+              ViewportOffset="@ViewportOffset"
+              @bind-MobileActiveTab="MobileActiveTab">
+    <Left>
+        @ListArea
+    </Left>
+    <Right>
+        @DetailArea
+    </Right>
+</FlexSplitter>
+
+@code {
+    [Parameter] public RenderFragment? ListArea { get; set; }
+    [Parameter] public RenderFragment? DetailArea { get; set; }
+
+    [Parameter] public int ViewportOffset { get; set; } = 112;
+
+    /* ✅ پاس‌دادن بایند تب موبایل به والد */
+    [Parameter] public int MobileActiveTab { get; set; }
+    [Parameter] public EventCallback<int> MobileActiveTabChanged { get; set; }
+}

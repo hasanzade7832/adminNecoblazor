@@ -1,0 +1,193 @@
+﻿@page "/programs/programtypes"
+@rendermode InteractiveServer
+@using MudBlazor
+
+<MasterDetailResponsive TItem="ProgramTypeDto"
+                        ViewportOffset="112"
+                        @bind-MobileActiveTab="mobileTabIndex">
+    <ListArea>
+        <MudPaper Elevation="0" Class="mb-2 p-0" Square="true" Style="background:transparent;">
+            <div class="ptl-header">
+                <div class="ptl-row">
+                    <MudText Class="ptl-title">Program Type List</MudText>
+                    <div class="grow"></div>
+                    <MudIconButton Icon="@Icons.Material.Outlined.Fullscreen"
+                                   Size="Size.Small"
+                                   Color="Color.Default"
+                                   Title="Expand" />
+                </div>
+
+                <div class="ptl-actions">
+                    <MudIconButton Icon="@Icons.Material.Outlined.Edit"
+                                   Size="Size.Small"
+                                   Color="Color.Default"
+                                   Title="Edit"
+                                   OnClick="@EditSelected" />
+                    <MudIconButton Icon="@Icons.Material.Outlined.Add"
+                                   Size="Size.Small"
+                                   Color="Color.Default"
+                                   Title="Add"
+                                   OnClick="@AddNew" />
+                    <MudIconButton Icon="@Icons.Material.Outlined.Delete"
+                                   Size="Size.Small"
+                                   Color="Color.Default"
+                                   Title="Delete"
+                                   OnClick="@DeleteSelected" />
+                </div>
+            </div>
+        </MudPaper>
+
+        <AppDataGrid TItem="ProgramTypeDto"
+                     Items="ProgramTypeItems"
+                     @bind-SelectedItem="Selected"
+                     SearchText="@SearchText"
+                     SearchTextChanged="@(v => SearchText = v)"
+                     SearchKeySelector="@(x => x.Name ?? string.Empty)"
+                     OnRowClick="@OnRowClick">
+
+            <ToolbarContent>
+                <div class="ptl-toolbar">
+                    <MudText Class="mr-2">Full Text Search</MudText>
+                    <MudTextField T="string"
+                                  @bind-Value="SearchText"
+                                  Variant="Variant.Text"
+                                  Class="adg-search adg-search--half"
+                                  Placeholder=""
+                                  Immediate="true" />
+                </div>
+            </ToolbarContent>
+
+            <HeaderContent>
+                <MudTh>Name</MudTh>
+                <MudTh class="text-center"> </MudTh>
+            </HeaderContent>
+
+            <RowTemplate Context="row">
+                <MudTd>@row.Name</MudTd>
+                <MudTd Class="text-center"> </MudTd>
+            </RowTemplate>
+        </AppDataGrid>
+    </ListArea>
+
+    <DetailArea>
+        <MudPaper Elevation="0" Square="true" Class="p-0 mb-2" Style="background:transparent;">
+            <div @key="detailMode" style="display:flex; align-items:center; padding:4px 6px;">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <MudIcon Icon="@(detailMode == DetailMode.Edit ? Icons.Material.Outlined.Edit : Icons.Material.Outlined.Add)" />
+                    <MudText Typo="Typo.body2">@((detailMode == DetailMode.Edit) ? "Edit" : "Add")</MudText>
+                </div>
+                <div style="margin-left:auto;"></div>
+                <MudIconButton Icon="@Icons.Material.Outlined.Fullscreen" Size="Size.Small" />
+                <MudIconButton Icon="@Icons.Material.Outlined.Close" Size="Size.Small" OnClick="@CloseDetails" />
+            </div>
+            <MudDivider />
+        </MudPaper>
+
+        <MudPaper Elevation="0" Square="true" Class="p-2" Style="background:transparent;">
+            <MudGrid>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string"
+                                  Label="Program Type Title*"
+                                  Value="@(Selected?.Name ?? string.Empty)"
+                                  ValueChanged="OnNameChanged"
+                                  MaxLength="100"
+                                  Immediate="true" />
+                </MudItem>
+                <MudItem xs="12" md="6">
+                    <MudTextField T="string"
+                                  Label="Description"
+                                  Value="@(Selected?.Description ?? string.Empty)"
+                                  ValueChanged="OnDescChanged"
+                                  Immediate="true" />
+                </MudItem>
+            </MudGrid>
+        </MudPaper>
+    </DetailArea>
+</MasterDetailResponsive>
+
+@code {
+    private enum DetailMode { None, Add, Edit }
+
+    private string? SearchText;
+    private int mobileTabIndex = 0;            // 0 = List, 1 = Details
+    private DetailMode detailMode = DetailMode.None;
+
+    private List<ProgramTypeDto> ProgramTypeItems = new()
+    {
+        new() { Id = 1, Name = "Ali_Test edits" },
+        new() { Id = 2, Name = "Construction" },
+        new() { Id = 3, Name = "Engineering" },
+        new() { Id = 4, Name = "Procurement" },
+        new() { Id = 5, Name = "Project" },
+    };
+
+    private ProgramTypeDto? _selected;
+    private ProgramTypeDto? Selected
+    {
+        get => _selected;
+        set
+        {
+            _selected = value;
+            if (_selected is not null)
+            {
+                detailMode = DetailMode.Edit;
+                mobileTabIndex = 1;
+            }
+            else
+            {
+                detailMode = DetailMode.None;
+            }
+            StateHasChanged();
+        }
+    }
+
+    private void OnRowClick(ProgramTypeDto item)
+    {
+        // setter بالا کافی است
+    }
+
+    private void EditSelected()
+    {
+        // فعلاً هیچ کاری نکند
+    }
+
+    private void AddNew()
+    {
+        Selected = new ProgramTypeDto();
+        detailMode = DetailMode.Add;
+        mobileTabIndex = 1;
+        StateHasChanged();
+    }
+
+    private void DeleteSelected()
+    {
+        if (Selected is null) return;
+        // TODO: حذف
+    }
+
+    private Task OnNameChanged(string value)
+    {
+        if (Selected is not null) Selected.Name = value;
+        return Task.CompletedTask;
+    }
+
+    private Task OnDescChanged(string value)
+    {
+        if (Selected is not null) Selected.Description = value;
+        return Task.CompletedTask;
+    }
+
+    private void CloseDetails()
+    {
+        detailMode = DetailMode.None;
+        Selected = null;
+        mobileTabIndex = 0;
+    }
+
+    public class ProgramTypeDto
+    {
+        public int Id { get; set; }
+        public string? Name { get; set; }
+        public string? Description { get; set; }
+    }
+}

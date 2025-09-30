@@ -1,0 +1,88 @@
+﻿.md-shell {
+    width: 100%;
+    height: calc(100dvh - 180px);
+}
+
+.md-splitter {
+    height: 100%;
+    background: transparent;
+}
+
+.md-gutter {
+    background: #0000000f;
+}
+
+.md-left, .md-right {
+    height: 100%;
+    overflow: auto;
+}
+
+.md-left {
+    background: #fef6ee;
+}
+
+.md-right {
+    background: #fff;
+}
+
+.md-empty {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.md-mobile-tabs .mud-tabs-tabbar {
+    background: transparent !important;
+}
+
+.md-mobile-tabs .mud-tab {
+    text-transform: none;
+}
+
+.adg-root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.adg-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: #c55a11;
+    color: #fff;
+}
+
+.adg-search {
+    margin-left: auto;
+    min-width: 220px;
+}
+
+.adg-table {
+    --row-h: 40px;
+}
+
+    .adg-table .mud-table-cell {
+        height: var(--row-h);
+    }
+
+    .adg-table .mud-table-head .mud-table-row {
+        background: #ffcc00;
+    }
+
+    .adg-table .mud-table-row:hover {
+        background: #00000008;
+    }
+
+@media (max-width: 960px) {
+    .md-shell {
+        height: auto;
+        min-height: 60dvh;
+    }
+
+    .adg-search {
+        min-width: 160px;
+    }
+}

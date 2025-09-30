@@ -1,0 +1,223 @@
+﻿/* ریشه */
+.mega-nav-root {
+    position: relative;
+}
+
+/* نوار بالایی نارنجی */
+.mega-topbar {
+    background: #c55a11; /* نارنجی */
+    color: #fff;
+    height: 44px;
+    min-height: 44px;
+    border-radius: 10px 10px 0 0;
+    display: flex;
+    align-items: center;
+    padding: 0 8px;
+    box-shadow: 0 6px 14px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.045);
+
+}
+
+.mega-topbar-scroller {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    width: 100%;
+    scrollbar-width: thin;
+    white-space: nowrap; /* هرگز نشکند */
+}
+
+    .mega-topbar-scroller::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .mega-topbar-scroller::-webkit-scrollbar-thumb {
+        background: #00000022;
+        border-radius: 6px;
+    }
+
+/* تب‌های دسته‌ها */
+button.mud-button-root.mega-tab {
+    height: 44px;
+    min-height: 44px;
+    padding: 0 14px !important;
+    color: #fff !important;
+    text-transform: none !important;
+    font-weight: 700;
+    letter-spacing: .2px;
+    border-radius: 0 !important;
+    flex: 0 0 auto; /* عرض بر اساس محتوا، نپیچد */
+}
+
+    button.mud-button-root.mega-tab .mud-button-label {
+        white-space: nowrap; /* کلمات هرگز به خط بعد نروند */
+        word-break: keep-all;
+    }
+
+    button.mud-button-root.mega-tab:hover {
+        background: rgba(255,255,255,.08) !important;
+    }
+
+    button.mud-button-root.mega-tab.is-active {
+        color: #0099bc !important;
+        background: transparent !important;
+        box-shadow: inset 0 -2px 0 0 #0099bc !important;
+    }
+
+/* پانل زیر منو */
+.mega-panel {
+    background: #fff;
+    border: 1px solid #e9e9e9;
+    border-top: none;
+    box-shadow: 0 1px 0 rgba(0,0,0,.04) inset;
+    padding: 0;
+    border-radius: 0 0 10px 10px;
+}
+
+/* ردیف افقی زیرمنوها (یک خط با اسکرول افقی) */
+.mega-row {
+    display: block;
+    white-space: nowrap; /* یک خط */
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+    padding: 6px 0;
+}
+
+    .mega-row::-webkit-scrollbar {
+        height: 6px;
+    }
+
+    .mega-row::-webkit-scrollbar-thumb {
+        background: #00000022;
+        border-radius: 6px;
+    }
+
+/* دو ستون داخل ردیف */
+.mega-left, .mega-right {
+    display: inline-flex; /* کنار هم روی یک خط */
+    flex-direction: column; /* چیدمان داخلی ستونی */
+    justify-content: center;
+    vertical-align: top;
+    min-width: 0;
+    padding: 0 16px;
+    white-space: normal;
+}
+
+/* دیوایدر بین دو ستون */
+.mega-right {
+    border-left: 1px solid #eee;
+    padding-left: 24px;
+    margin-left: 8px;
+}
+
+/* لیست آیتم‌های هر ستون: یک ردیف افقی */
+.mega-items {
+    display: inline-flex;
+    flex-wrap: nowrap !important; /* هرگز نشکند */
+    align-items: center;
+    gap: 32px;
+    min-width: 0;
+    overflow-x: visible; /* اسکرول اصلی روی .mega-row است */
+}
+
+    .mega-items > * {
+        flex: 0 0 auto;
+    }
+
+/* دکمه آیتم‌ها */
+button.mud-button-root.mega-item {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 18px;
+    padding: 6px 8px !important;
+    border-radius: 10px !important;
+    color: #333 !important;
+    line-height: 1.2;
+    white-space: nowrap; /* هرگز به خط بعد نرو */
+    flex: 0 0 auto;
+}
+
+    button.mud-button-root.mega-item:hover,
+    button.mud-button-root.mega-item:focus,
+    button.mud-button-root.mega-item:active,
+    button.mud-button-root.mega-item.is-active {
+        background: #dedede !important;
+    }
+
+/* آیکون و متن آیتم‌ها */
+.mega-item .mud-button-start-icon, .mega-item .mud-icon-root {
+    margin-inline-end: 14px !important;
+    font-size: 22px !important;
+}
+
+.mega-item .mud-button-label {
+    text-transform: none !important;
+    white-space: nowrap;
+    word-break: keep-all;
+}
+
+.mega-item-text .title {
+    font-size: 13.5px;
+    font-weight: 500;
+    white-space: nowrap;
+    word-break: keep-all;
+}
+
+/* فوتر هر ستون */
+.mega-col-footer {
+    margin-top: 10px;
+    font-size: 12px;
+    color: #7a7a7a;
+    text-align: center;
+    white-space: nowrap;
+}
+
+/* ریسپانسیو */
+@media (max-width: 900px) {
+    button.mud-button-root.mega-tab {
+        padding: 0 10px !important;
+    }
+
+    .mega-topbar-scroller {
+        gap: 8px;
+    }
+
+    .mega-items {
+        gap: 18px;
+    }
+
+    button.mud-button-root.mega-item {
+        gap: 12px;
+        padding: 6px 10px !important;
+    }
+
+    .mega-item .mud-icon-root {
+        margin-inline-end: 10px !important;
+        font-size: 20px !important;
+    }
+
+    .mega-item-text .title {
+        font-size: 13px;
+    }
+}
+
+@media (max-width:420px) {
+    .mega-items {
+        gap: 12px;
+    }
+
+    button.mud-button-root.mega-item {
+        padding: 6px 8px !important;
+    }
+
+    .mega-item-text .title {
+        font-size: 12.5px;
+    }
+}

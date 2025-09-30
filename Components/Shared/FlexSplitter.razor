@@ -1,0 +1,136 @@
+﻿@using Microsoft.JSInterop
+@implements IAsyncDisposable
+
+<div class="fs-shell" style="--fs-viewport-offset:@($"{ViewportOffset}px")">
+    <!-- دسکتاپ: اسپلیتر دو ستونه -->
+    <MudHidden Breakpoint="Breakpoint.SmAndDown">
+        <div class="fs-row" @ref="_root">
+            <div class="fs-left" @ref="_left">
+                <div class="fs-panel">
+                    @Left
+                </div>
+            </div>
+
+            <div class="fs-gutter" @ref="_gutter" title="Drag to resize"></div>
+
+            <div class="fs-right" @ref="_right">
+                <div class="fs-panel">
+                    @if (Right is not null)
+                    {
+                        @Right
+                    }
+                    else
+                    {
+                        <div class="fs-empty">
+                            <MudText Typo="Typo.body1" Class="opacity-70">Select an item…</MudText>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </MudHidden>
+
+    <!-- موبایل: تب‌ها -->
+    <MudHidden Breakpoint="Breakpoint.MdAndUp">
+        <MudTabs Elevation="0"
+                 Class="fs-mobile-tabs"
+                 Rounded="true"
+                 @bind-ActivePanelIndex="MobileActiveTab">
+            <MudTabPanel Text="List">
+                <div class="fs-left">
+                    <div class="fs-panel">
+                        @Left
+                    </div>
+                </div>
+            </MudTabPanel>
+            <MudTabPanel Text="Details">
+                <div class="fs-right">
+                    <div class="fs-panel">
+                        @if (Right is not null)
+                        {
+                            @Right
+                        }
+                        else
+                        {
+                            <div class="fs-empty">
+                                <MudText>Select an item…</MudText>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </MudTabPanel>
+        </MudTabs>
+    </MudHidden>
+</div>
+
+@code {
+    [Inject] private IJSRuntime JS { get; set; } = default!;
+
+    [Parameter] public RenderFragment? Left { get; set; }
+    [Parameter] public RenderFragment? Right { get; set; }
+
+    [Parameter] public int MinLeft { get; set; } = 220;
+    [Parameter] public int MinRight { get; set; } = 260;
+
+    [Parameter] public int ViewportOffset { get; set; } = 112;
+    [Parameter] public string? PersistKey { get; set; }
+
+    /* ✅ بایند دوطرفه برای تب موبایل */
+    [Parameter] public int MobileActiveTab { get; set; }
+    [Parameter] public EventCallback<int> MobileActiveTabChanged { get; set; }
+
+    private ElementReference _root, _left, _right, _gutter;
+    private IJSObjectReference? _module;
+    private bool _inited;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _inited) return;
+        _inited = true;
+
+        var v = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var candidates = new[]
+        {
+            $"/js/flexsplitter.js?v={v}",
+            $"/_content/AdminNeco/js/flexsplitter.js?v={v}",
+            $"/_content/AdminNeco.Components/js/flexsplitter.js?v={v}",
+        };
+
+        Exception? lastError = null;
+        foreach (var url in candidates)
+        {
+            try
+            {
+                _module = await JS.InvokeAsync<IJSObjectReference>("import", url);
+                await JS.InvokeVoidAsync("console.info", $"[FlexSplitter] loaded: {url}");
+                lastError = null;
+                break;
+            }
+            catch (Exception ex)
+            {
+                lastError = ex;
+                await JS.InvokeVoidAsync("console.warn", $"[FlexSplitter] failed: {url} -> {ex.Message}");
+            }
+        }
+
+        if (_module is null)
+            throw new InvalidOperationException("flexsplitter.js not found in any known path.", lastError);
+
+        await _module.InvokeVoidAsync("initSplitter",
+            _root, _left, _right, _gutter,
+            new { minLeft = MinLeft, minRight = MinRight, persistKey = PersistKey });
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try
+        {
+            if (_module is not null)
+            {
+                await _module.InvokeVoidAsync("cleanup", _root);
+                await _module.DisposeAsync();
+            }
+        }
+        catch { /* ignore */ }
+    }
+}

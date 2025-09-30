@@ -1,0 +1,218 @@
+﻿@using MudBlazor
+@inject NavigationManager Nav
+@inject AdminNeco.Services.AppState AppState
+
+@if (AppState.IsLoggedIn)
+{
+    <div class="mega-nav-root">
+
+        <!-- نوار بالایی نارنجی: دسته‌ها -->
+        <div class="mega-topbar">
+            <div class="mega-topbar-scroller">
+                @for (int i = 0; i < Categories.Count; i++)
+                {
+                    var catBtn = Categories[i];
+                    var idx = i;  // ✅ کپی ایندکس برای جلوگیری از مشکل closure
+                    <MudButton Variant="Variant.Text"
+                               Class=@($"mega-tab{(idx == activeCat ? " is-active" : "")}")
+                               DisableRipple="true"
+                               OnClick="@(() => SetActiveCat(idx))">
+                        @catBtn.Title
+                    </MudButton>
+                }
+            </div>
+        </div>
+
+        <!-- پانل افقی زیرمنو (فقط محتوای دسته فعال) -->
+        <MudPaper Class="mega-panel" Elevation="0" Square="true">
+            @if (Categories.Count > 0)
+            {
+                var cat = Categories[activeCat];
+
+                @if (cat.Sections is not null && cat.Sections.Count > 0)
+                {
+                    var left = cat.Sections[0];
+                    var rightList = cat.Sections.Skip(1).ToList();
+                    var rightFooter = string.Join(" • ",
+                    rightList.Where(s => !string.IsNullOrWhiteSpace(s.Footer))
+                    .Select(s => s.Footer));
+
+                    <div class="mega-row">
+                        <!-- ستون چپ -->
+                        <div class="mega-left">
+                            <div class="mega-items">
+                                @foreach (var it in left.Items)
+                                {
+                                    <MudButton Variant="Variant.Text"
+                                               Class=@($"mega-item{(IsActive(it.Href) ? " is-active" : "")}")
+                                               OnClick="@(()=> NavigateTo(it.Href))">
+                                        <MudIcon Icon="@it.Icon" Size="Size.Medium" />
+                                        <div class="mega-item-text">
+                                            <div class="title">@it.Text</div>
+                                        </div>
+                                    </MudButton>
+                                }
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(left.Footer))
+                            {
+                                <div class="mega-col-footer">@left.Footer</div>
+                            }
+                        </div>
+
+                        <!-- ستون راست -->
+                        @if (rightList.Count > 0)
+                        {
+                            <div class="mega-right">
+                                <div class="mega-items">
+                                    @foreach (var sec in rightList)
+                                    {
+                                        @foreach (var it in sec.Items)
+                                        {
+                                            <MudButton Variant="Variant.Text"
+                                                       Class=@($"mega-item{(IsActive(it.Href) ? " is-active" : "")}")
+                                                       OnClick="@(()=> NavigateTo(it.Href))">
+                                                <MudIcon Icon="@it.Icon" Size="Size.Medium" />
+                                                <div class="mega-item-text">
+                                                    <div class="title">@it.Text</div>
+                                                </div>
+                                            </MudButton>
+                                        }
+                                    }
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(rightFooter))
+                                {
+                                    <div class="mega-col-footer">@rightFooter</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="p-3">No categories.</div>
+            }
+        </MudPaper>
+    </div>
+}
+
+@code {
+    private int activeCat;
+
+    protected override void OnInitialized()
+    {
+        // فقط بار اول تب متناسب با مسیر فعلی
+        activeCat = CategoryIndexForPath(GetCurrentPath());
+        if (activeCat < 0) activeCat = 0;
+    }
+
+    private string GetCurrentPath()
+        => Nav.ToBaseRelativePath(Nav.Uri).Split('?', '#')[0].Trim('/').ToLowerInvariant();
+
+    private int CategoryIndexForPath(string relPath)
+    {
+        for (int i = 0; i < Categories.Count; i++)
+        {
+            var cat = Categories[i];
+            if (cat.Sections?.Any(sec => sec.Items.Any(it =>
+                     (it.Href ?? "").Trim('/').ToLowerInvariant() == relPath)) == true)
+                return i;
+        }
+        return -1;
+    }
+
+    private void SetActiveCat(int i)
+    {
+        if (i < 0) i = 0;
+        if (i >= Categories.Count) i = Categories.Count - 1;
+        activeCat = i;
+        StateHasChanged();
+    }
+
+    private void NavigateTo(string href)
+    {
+        if (string.IsNullOrWhiteSpace(href)) return;
+
+        // هم‌زمان تب مناسب مقصد را فعال کن
+        var idx = CategoryIndexForPath((href ?? "").Trim('/').ToLowerInvariant());
+        if (idx >= 0) activeCat = idx;
+
+        Nav.NavigateTo(href);
+    }
+
+    private bool IsActive(string href)
+    {
+        var rel = GetCurrentPath();
+        var target = (href ?? "").Trim('/').ToLowerInvariant();
+        return !string.IsNullOrEmpty(target) && rel == target;
+    }
+
+    // ===== مدل داده منو =====
+    public record MenuItem(string Text, string Href, string Icon);
+    public record MenuSection(string Footer, List<MenuItem> Items);
+    public record MenuCategory(string Title, List<MenuSection> Sections);
+
+    List<MenuCategory> Categories = new()
+    {
+        new("File", new()
+        {
+            new MenuSection("", new()
+            {
+                new("Open", "/file/open", Icons.Material.Filled.FolderOpen),
+                new("Save", "/file/save", Icons.Material.Filled.Save),
+                new("Export", "/file/export", Icons.Material.Filled.IosShare)
+            }),
+        }),
+        new("General", new()
+        {
+            new MenuSection("Setting", new()
+            {
+                new("Configuration", "/general/configuration", Icons.Material.Filled.Settings),
+                new("Commands", "/general/commands", Icons.Material.Filled.TipsAndUpdates),
+                new("Ribbons", "/general/ribbons", Icons.Material.Filled.DashboardCustomize)
+            }),
+            new MenuSection("Users Roles", new()
+            {
+                new("Users", "/general/users", Icons.Material.Filled.Person),
+                new("Roles", "/general/roles", Icons.Material.Filled.AccountTree),
+                new("Staffing", "/general/staffing", Icons.Material.Filled.Badge),
+                new("Role Groups", "/general/rolegroups", Icons.Material.Filled.GridView),
+                new("Enterprises", "/general/enterprises", Icons.Material.Filled.Apartment)
+            })
+        }),
+        new("Forms", new()
+        {
+            new MenuSection("Forms", new()
+            {
+                new("Forms", "/forms", Icons.Material.Filled.FactCheck),
+                new("CategoryForms", "/forms/categoryform", Icons.Material.Filled.ViewList)
+            })
+        }),
+        new("Approval Flows", new()
+        {
+            new MenuSection("Approval", new()
+            {
+                new("ApprovalFlows", "/approvalflows", Icons.Material.Filled.Route),
+            })
+        }),
+        new("Programs", new()
+        {
+            new MenuSection("Programs", new()
+            {
+                new("Program Templates", "/programs/programtemplates", Icons.Material.Filled.Apps),
+                new("Program Types", "/programs/programtypes", Icons.Material.Filled.Event)
+            })
+        }),
+        new("Project", new()
+        {
+            new MenuSection("Project", new()
+            {
+                new("Projects", "/projects/projects", Icons.Material.Filled.Workspaces),
+                new("Projects Access", "/projects/projectsAccess", Icons.Material.Filled.Assessment),
+                new("Odp", "/projects/Odp", Icons.Material.Filled.Assessment),
+                new("Procedures", "/projects/procedures", Icons.Material.Filled.Assessment),
+                new("Calendars", "/projects/calendars", Icons.Material.Filled.Assessment)
+            })
+        }),
+    };
+}

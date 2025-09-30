@@ -1,0 +1,106 @@
+﻿@typeparam TItem
+@using MudBlazor
+
+<MudPaper Class="adg-root" Elevation="0" Square="true">
+    <div class="adg-toolbar">
+        @if (ToolbarContent is not null)
+        {
+            @ToolbarContent
+        }
+        <div class="adg-toolbar-spacer"></div>
+        @if (RightContent is not null)
+        {
+            @RightContent
+        }
+    </div>
+
+    <div class="adg-table-wrap">
+        <MudTable T="TItem"
+                  Items="FilteredItems"
+                  Hover="true"
+                  Dense="true"
+                  Bordered="false"
+                  Outlined="false"
+                  Class="adg-table"
+                  Clickable="true"
+                  RowStyleFunc="GetRowStyle"
+                  @bind-SelectedItem="SelectedInternal">
+
+            <HeaderContent>
+                @HeaderContent
+            </HeaderContent>
+
+            <RowTemplate>
+                @if (RowTemplate is not null)
+                {
+                    @RowTemplate(context)
+                }
+            </RowTemplate>
+
+            <NoRecordsContent>
+                <MudText Class="p-4 opacity-70">No records</MudText>
+            </NoRecordsContent>
+        </MudTable>
+    </div>
+</MudPaper>
+
+@code {
+    [Parameter] public IEnumerable<TItem>? Items { get; set; }
+
+    [Parameter] public RenderFragment? ToolbarContent { get; set; }
+    [Parameter] public RenderFragment? RightContent { get; set; }
+
+    [Parameter] public RenderFragment? HeaderContent { get; set; }
+    [Parameter] public RenderFragment<TItem>? RowTemplate { get; set; }
+
+    [Parameter] public string? SearchText { get; set; }
+    [Parameter] public EventCallback<string?> SearchTextChanged { get; set; }
+    [Parameter] public Func<TItem, string>? SearchKeySelector { get; set; }
+
+    /* بایند انتخاب سطر برای والد */
+    [Parameter] public TItem? SelectedItem { get; set; }
+    [Parameter] public EventCallback<TItem?> SelectedItemChanged { get; set; }
+
+    /* برای سازگاری با گذشته: در صورت نیاز همچنان event بیرونی */
+    [Parameter] public EventCallback<TItem> OnRowClick { get; set; }
+
+    private IEnumerable<TItem> FilteredItems =>
+        (Items ?? Enumerable.Empty<TItem>())
+        .Where(i =>
+        {
+            if (string.IsNullOrWhiteSpace(SearchText) || SearchKeySelector is null) return true;
+            var key = SearchKeySelector(i) ?? string.Empty;
+            return key.Contains(SearchText, StringComparison.OrdinalIgnoreCase);
+        });
+
+    protected override void OnParametersSet()
+    {
+        if (!Equals(_selectedInternal, SelectedItem))
+            _selectedInternal = SelectedItem;
+    }
+
+    private TItem? _selectedInternal;
+    private TItem? SelectedInternal
+    {
+        get => _selectedInternal;
+        set
+        {
+            if (!Equals(_selectedInternal, value))
+            {
+                _selectedInternal = value;
+                _ = OnSelectionChangedAsync(value);
+            }
+        }
+    }
+
+    private async Task OnSelectionChangedAsync(TItem? value)
+    {
+        if (SelectedItemChanged.HasDelegate)
+            await SelectedItemChanged.InvokeAsync(value);
+
+        if (value is not null && OnRowClick.HasDelegate)
+            await OnRowClick.InvokeAsync(value);
+    }
+
+    private string GetRowStyle(TItem _, int __) => "cursor: pointer;";
+}

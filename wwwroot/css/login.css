@@ -1,0 +1,204 @@
+﻿/* صفحه ثابت و بدون اسکرول */
+html, body {
+    height: 100%;
+    margin: 0;
+    overflow-y: hidden;
+}
+
+.login-page {
+    min-height: 100dvh;
+    display: grid;
+    place-items: center;
+    padding: 24px;
+    background: radial-gradient(1200px 600px at 50% 20%, rgba(220,0,0,0.06), transparent 60%), #fff;
+}
+
+/* کارت */
+.login-card {
+    width: clamp(320px, 92vw, 420px);
+    padding: 24px 24px 16px;
+    border-radius: 14px;
+    background: #fff;
+    border: 1px solid rgba(230,0,0,.22);
+    box-shadow: 0 20px 45px rgba(0,0,0,.08), 0 2px 6px rgba(0,0,0,.06);
+}
+
+/* هدر */
+.card-chrome {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 6px;
+}
+
+.brand-logo {
+    height: 34px;
+    object-fit: contain;
+}
+
+/* سلکت زبان */
+.lang-select {
+    flex: 0 0 36% !important;
+    max-width: 36% !important;
+    text-align: center;
+}
+
+    .lang-select .mud-input-root {
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+        min-height: 32px;
+        border-bottom: 1px solid #cfcfcf !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+    }
+
+    .lang-select .mud-input-slot {
+        padding: 0 !important;
+        text-align: center;
+        width: 100%;
+    }
+
+    .lang-select .mud-select {
+        width: 100%;
+    }
+
+    .lang-select .mud-input-label {
+        display: none;
+    }
+
+/* فرم */
+.login-form {
+    display: flex;
+    flex-direction: column;
+    margin-top: 32px;
+}
+
+/* فاصله بین اینپوت‌ها */
+.line-field {
+    margin-bottom: 24px;
+}
+
+.password-wrap {
+    margin-top: 0;
+}
+
+/* فیلدهای خطی */
+.line-field .mud-input-root {
+    background: transparent !important;
+    border: none !important;
+    border-bottom: 1px solid #9e9e9e !important; /* همیشه خاکستری */
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    min-height: 44px;
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    align-items: center;
+}
+
+.line-field .mud-input-adornment {
+    width: 28px;
+    justify-content: center;
+    color: #4a4a4a !important; /* پیش‌فرض خاکستری */
+}
+
+.line-field .mud-input-slot {
+    padding: 0 !important;
+}
+
+/* لیبل همیشه خاکستری */
+.line-field .mud-input-label {
+    color: #757575 !important;
+    font-weight: 400;
+}
+
+/* دارای مقدار = فقط آیکن قرمز بشه */
+.line-field:has(input:not(:placeholder-shown)) .mud-input-adornment,
+.line-field:has(input:-webkit-autofill) .mud-input-adornment,
+.line-field:has(.mud-input-label-shrink) .mud-input-adornment {
+    color: #d32f2f !important;
+}
+
+/* فوکوس = فقط آیکن قرمز بشه */
+.line-field .mud-input-root.mud-input-focused .mud-input-adornment {
+    color: #d32f2f !important;
+}
+
+/* آیکن چشم – کاملاً ثابت و کمی بالاتر از خط اینپوت */
+.field-box {
+    position: relative;
+}
+
+.eye-abs {
+    position: absolute !important;
+    right: 4px;
+    top: 8px !important;
+    bottom: auto !important;
+    transform: none !important;
+    z-index: 2;
+    color: #4a4a4a !important;
+}
+
+.pr-eye .mud-input-root {
+    padding-right: 34px;
+}
+
+/* دکمه Login */
+.btn-login.mud-button-root {
+    width: 160px;
+    align-self: center;
+    margin-top: 20px;
+    background: #d32f2f !important;
+    color: #fff !important;
+    border-radius: 6px;
+    font-weight: 700;
+    text-transform: uppercase;
+    box-shadow: 0 6px 12px rgba(211,47,47,.38), 0 2px 4px rgba(0,0,0,.08);
+}
+
+/* فوتر */
+.card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 18px;
+}
+
+    .card-footer .date {
+        color: #8a8a8a;
+        font-size: 12px;
+    }
+
+.gear-btn {
+    color: #7a7a7a;
+}
+
+/* Autofill Chrome */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px #fff inset !important;
+    box-shadow: 0 0 0 1000px #fff inset !important;
+    -webkit-text-fill-color: inherit !important;
+    transition: background-color 5000s ease-in-out 0s !important;
+}
+
+/* RTL */
+.login-page.rtl .login-card {
+    direction: rtl;
+}
+
+.login-page.rtl .eye-abs {
+    right: auto;
+    left: 4px;
+}
+
+.login-page.rtl .pr-eye .mud-input-root {
+    padding-right: 0;
+    padding-left: 34px;
+}

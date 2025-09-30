@@ -1,0 +1,289 @@
+﻿/* متغیرهای پایه */
+:root {
+    --fs-viewport-offset: 112px;
+    --app-footer-h: 11px;
+}
+
+/* حذف padding پیش‌فرض بدنه برای چسبیدن کامل Splitter به زیرِ ساب‌منو */
+.main-no-pad {
+    padding: 0 !important;
+}
+
+/* ظرف کلی Splitter */
+.fs-shell {
+    width: 100%;
+    height: calc(100dvh - var(--fs-viewport-offset) - var(--app-footer-h));
+    display: flex;
+    flex-direction: column;
+    padding-block: 0;
+    margin-block: 0;
+}
+
+/* ردیف اسپلیتر */
+.fs-row {
+    flex: 1 1 auto;
+    display: flex;
+    min-height: 0;
+    padding-inline: 8px;
+}
+
+/* پنل‌ها */
+.fs-left, .fs-right {
+    height: 100%;
+    min-height: 0;
+    min-width: 0;
+    overflow-y: auto;
+}
+
+.fs-left {
+    flex: 0 0 auto;
+    flex-basis: 45%;
+    overflow-x: auto;
+}
+
+.fs-right {
+    flex: 1 1 auto;
+    overflow-x: hidden;
+}
+
+/* کارت داخلی هر پنل */
+.fs-panel {
+    height: 100%;
+    min-height: 0;
+    background: #fff;
+    border-radius: 14px;
+    box-shadow: 0 6px 14px rgba(0,0,0,.06), 0 2px 6px rgba(0,0,0,.04);
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* گاتر */
+.fs-gutter {
+    width: 10px;
+    cursor: col-resize;
+    background: #00000012;
+    border-radius: 8px;
+    margin-inline: 8px;
+    position: relative;
+    flex: 0 0 auto;
+}
+
+    .fs-gutter::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 2px;
+        height: 36px;
+        transform: translate(-50%,-50%);
+        background: #0000003b;
+        border-radius: 2px;
+    }
+
+/* Empty state */
+.fs-empty {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* موبایل */
+.fs-mobile-tabs .mud-tabs-tabbar {
+    background: transparent !important;
+}
+
+.fs-mobile-tabs .mud-tab {
+    text-transform: none;
+}
+
+/* ===== گرید (سمت چپ) ===== */
+.adg-root {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-width: 560px;
+    background: #fff4e7; /* پس‌زمینه کل پنل */
+    border-radius: 12px;
+}
+
+/* نوار ابزار نارنجی */
+.adg-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 12px;
+    background: #c55a11;
+    color: #fff;
+    border-radius: 10px;
+}
+
+.adg-toolbar-spacer {
+    margin-left: auto;
+}
+
+/* ظرف اسکرول جدول */
+.adg-table-wrap {
+    position: relative; /* برای overlay لودینگ */
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow: auto;
+    background: #fff4e7; /* ✅ حذف هر گپ/خط سفید اطراف جدول */
+}
+
+/* ✅ لودینگ وسط جدول */
+.adg-loading-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 2;
+    background: transparent;
+}
+
+.adg-loading-default {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px;
+    background: #ffffffd0;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.08);
+}
+
+/* ✅ هم‌رنگ‌سازی کامل لایه‌های جدول و حذف بوردر/شدو */
+.adg-table,
+.adg-table .mud-table-container,
+.adg-table .mud-table-root,
+.adg-table .mud-table,
+.adg-table table {
+    background: #fff4e7 !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+    /* در صورت وجود شبه‌عناصر جداکننده در کانتینر جدول */
+    .adg-table .mud-table-container::before,
+    .adg-table .mud-table-container::after {
+        display: none !important;
+    }
+
+    /* هدر زرد */
+    .adg-table .mud-table-head .mud-table-row {
+        background: #ffcc00;
+    }
+
+        .adg-table .mud-table-head .mud-table-row:hover {
+            background: #ffcc00;
+        }
+
+    /* ردیف‌های بدنه */
+    .adg-table .mud-table-body .mud-table-row {
+        background: #fff4e7 !important;
+    }
+
+    /* خطوط جداکننده فقط ملایم */
+    .adg-table .mud-table-body .mud-table-cell,
+    .adg-table .mud-table-head .mud-table-cell {
+        border-bottom: 1px solid #ccc3b9 !important;
+    }
+
+    /* هاور روی بدنه */
+    .adg-table .mud-table-body .mud-table-row:hover {
+        background: #ccc3b9 !important;
+    }
+
+/* ✅ Empty state همرنگ بدنه و وسط */
+.adg-empty {
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff4e7;
+    color: #605e5c;
+    font-size: 14px;
+}
+
+/* ورودی سرچ (نسخه نصف) */
+.adg-search {
+    min-width: 220px;
+}
+
+.adg-search--half {
+    width: 120px;
+    min-width: 120px;
+}
+
+/* ===== کلاس‌های کوچک‌سازی مخصوص ProgramTypes ===== */
+.ptl-header {
+    padding: 4px 6px;
+    margin: 0;
+}
+
+.ptl-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ptl-title {
+    font-size: 14px;
+    font-weight: 600;
+}
+
+/* ردیف آیکون‌های CRUD: فاصله بالا/پایین بهینه */
+.ptl-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 6px;
+    margin-top: 10px;
+    margin-bottom: 2px;
+    padding: 0;
+}
+
+.grow {
+    margin-left: auto;
+}
+
+/* فونت کوچک برای تولبار نارنجی این صفحه */
+.ptl-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+}
+
+    .ptl-toolbar .mud-typography {
+        font-size: 13px;
+    }
+
+    .ptl-toolbar .mud-input-root,
+    .ptl-toolbar .mud-input-slot input {
+        font-size: 13px;
+    }
+
+@media (max-width:960px) {
+    .adg-search {
+        min-width: 160px;
+    }
+
+    .adg-search--half {
+        width: 100px;
+        min-width: 100px;
+    }
+}
+
+/* ===== فوتر ===== */
+.app-footer {
+    height: var(--app-footer-h);
+    background: #c55a11;
+    width: 100%;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 1000;
+    pointer-events: none;
+}

@@ -1,0 +1,92 @@
+﻿@inherits LayoutComponentBase
+@using MudBlazor
+@inject NavigationManager Nav
+@inject AdminNeco.Services.AppState AppState
+@implements IDisposable
+
+<MudThemeProvider />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider MaxDisplayedSnackbars="5" />
+
+@code {
+    private bool _didInitFromJs;
+
+    private bool IsLoginRoute
+    {
+        get
+        {
+            var rel = Nav.ToBaseRelativePath(Nav.Uri);
+            var q = rel.Split('?', '#')[0].Trim('/').ToLowerInvariant();
+            return string.IsNullOrEmpty(q) || q == "login";
+        }
+    }
+
+    /// <summary>
+    /// زیرمنو «کلیک شده» یعنی مسیر فعلی دست‌کم دو سگمنت داشته باشد.
+    /// مثال‌ها:
+    ///   "" یا "login"                   => false
+    ///   "programs"                      => false (فقط تب ریشه)
+    ///   "programs/programtypes"         => true  (زیرمنو)
+    ///   "file/open"                     => true
+    /// </summary>
+    private bool HasActiveSubRoute
+    {
+        get
+        {
+            var rel = Nav.ToBaseRelativePath(Nav.Uri);
+            var clean = rel.Split('?', '#')[0].Trim('/');
+
+            if (string.IsNullOrEmpty(clean)) return false;     // صفحه‌ی خالی/خانه
+            if (string.Equals(clean, "login", StringComparison.OrdinalIgnoreCase)) return false;
+
+            var segs = clean.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            return segs.Length >= 2; // فقط وقتی واقعاً زیرمنو هست
+        }
+    }
+
+    private bool ShowFooter => AppState.IsLoggedIn && HasActiveSubRoute;
+
+    protected override void OnInitialized()
+    {
+        AppState.Changed += StateHasChanged;
+        Nav.LocationChanged += HandleLocationChanged; // برای به‌روزرسانی شرط فوتر هنگام تغییر مسیر
+    }
+
+    private void HandleLocationChanged(object? sender, Microsoft.AspNetCore.Components.Routing.LocationChangedEventArgs e)
+        => InvokeAsync(StateHasChanged);
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender && !_didInitFromJs)
+        {
+            _didInitFromJs = true;
+            await AppState.InitializeAsync();
+            StateHasChanged();
+        }
+    }
+
+    public void Dispose()
+    {
+        AppState.Changed -= StateHasChanged;
+        Nav.LocationChanged -= HandleLocationChanged;
+    }
+}
+
+<MudLayout Class="@(IsLoginRoute ? "is-login" : null)">
+    @if (!IsLoginRoute && AppState.IsLoggedIn)
+    {
+        <NavMenu />
+    }
+
+    <MudMainContent Class="main-no-pad">
+        <MudContainer Class="p-0" MaxWidth="MaxWidth.False">
+            @Body
+        </MudContainer>
+    </MudMainContent>
+
+    @if (ShowFooter)
+    {
+        <div class="app-footer"></div>
+    }
+</MudLayout>
