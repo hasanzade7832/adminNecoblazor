@@ -4,22 +4,18 @@
     --app-footer-h: 11px;
 }
 
-/* حذف padding پیش‌فرض بدنه برای چسبیدن کامل Splitter به زیرِ ساب‌منو */
 .main-no-pad {
     padding: 0 !important;
 }
 
-/* ظرف کلی Splitter */
+/* Splitter */
 .fs-shell {
     width: 100%;
     height: calc(100dvh - var(--fs-viewport-offset) - var(--app-footer-h));
     display: flex;
     flex-direction: column;
-    padding-block: 0;
-    margin-block: 0;
 }
 
-/* ردیف اسپلیتر */
 .fs-row {
     flex: 1 1 auto;
     display: flex;
@@ -27,7 +23,6 @@
     padding-inline: 8px;
 }
 
-/* پنل‌ها */
 .fs-left, .fs-right {
     height: 100%;
     min-height: 0;
@@ -46,7 +41,6 @@
     overflow-x: hidden;
 }
 
-/* کارت داخلی هر پنل */
 .fs-panel {
     height: 100%;
     min-height: 0;
@@ -58,7 +52,6 @@
     flex-direction: column;
 }
 
-/* گاتر */
 .fs-gutter {
     width: 10px;
     cursor: col-resize;
@@ -81,7 +74,6 @@
         border-radius: 2px;
     }
 
-/* Empty state */
 .fs-empty {
     height: 100%;
     display: flex;
@@ -89,7 +81,6 @@
     justify-content: center;
 }
 
-/* موبایل */
 .fs-mobile-tabs .mud-tabs-tabbar {
     background: transparent !important;
 }
@@ -98,17 +89,17 @@
     text-transform: none;
 }
 
-/* ===== گرید (سمت چپ) ===== */
+/* ===== گرید ===== */
 .adg-root {
     height: 100%;
     display: flex;
     flex-direction: column;
     min-width: 560px;
-    background: #fff4e7; /* پس‌زمینه کل پنل */
+    background: #fff4e7;
     border-radius: 12px;
 }
 
-/* نوار ابزار نارنجی */
+/* Toolbar */
 .adg-toolbar {
     display: flex;
     align-items: center;
@@ -123,16 +114,16 @@
     margin-left: auto;
 }
 
-/* ظرف اسکرول جدول */
+/* Table container */
 .adg-table-wrap {
-    position: relative; /* برای overlay لودینگ */
+    position: relative;
     flex: 1 1 auto;
     min-height: 0;
     overflow: auto;
-    background: #fff4e7; /* ✅ حذف هر گپ/خط سفید اطراف جدول */
+    background: #fff4e7;
 }
 
-/* ✅ لودینگ وسط جدول */
+/* Loading overlay */
 .adg-loading-overlay {
     position: absolute;
     inset: 0;
@@ -154,23 +145,35 @@
     box-shadow: 0 2px 6px rgba(0,0,0,.08);
 }
 
-/* ✅ هم‌رنگ‌سازی کامل لایه‌های جدول و حذف بوردر/شدو */
+/* No-data overlay (بدون ردیف اضافه) */
+.adg-nodata-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    z-index: 1;
+    color: #605e5c;
+    font-size: 14px;
+}
+
+/* Table look & feel */
 .adg-table,
 .adg-table .mud-table-container,
-.adg-table .mud-table-root,
-.adg-table .mud-table,
-.adg-table table {
+.adg-table .mud-table-root {
     background: #fff4e7 !important;
     box-shadow: none !important;
     border: none !important;
 }
-    /* در صورت وجود شبه‌عناصر جداکننده در کانتینر جدول */
-    .adg-table .mud-table-container::before,
-    .adg-table .mud-table-container::after {
-        display: none !important;
+
+    /* عرض کامل جدول و هدر */
+    .adg-table .mud-table-container table {
+        width: 100% !important;
+        border-collapse: collapse !important;
     }
 
-    /* هدر زرد */
+    /* Header */
     .adg-table .mud-table-head .mud-table-row {
         background: #ffcc00;
     }
@@ -179,34 +182,23 @@
             background: #ffcc00;
         }
 
-    /* ردیف‌های بدنه */
+    /* Body rows */
     .adg-table .mud-table-body .mud-table-row {
         background: #fff4e7 !important;
     }
 
-    /* خطوط جداکننده فقط ملایم */
+    /* Dividers */
     .adg-table .mud-table-body .mud-table-cell,
     .adg-table .mud-table-head .mud-table-cell {
         border-bottom: 1px solid #ccc3b9 !important;
     }
 
-    /* هاور روی بدنه */
+    /* Hover */
     .adg-table .mud-table-body .mud-table-row:hover {
         background: #ccc3b9 !important;
     }
 
-/* ✅ Empty state همرنگ بدنه و وسط */
-.adg-empty {
-    min-height: 180px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: #fff4e7;
-    color: #605e5c;
-    font-size: 14px;
-}
-
-/* ورودی سرچ (نسخه نصف) */
+/* Search input sizing */
 .adg-search {
     min-width: 220px;
 }
@@ -216,7 +208,7 @@
     min-width: 120px;
 }
 
-/* ===== کلاس‌های کوچک‌سازی مخصوص ProgramTypes ===== */
+/* ProgramTypes small tweaks */
 .ptl-header {
     padding: 4px 6px;
     margin: 0;
@@ -233,7 +225,6 @@
     font-weight: 600;
 }
 
-/* ردیف آیکون‌های CRUD: فاصله بالا/پایین بهینه */
 .ptl-actions {
     display: flex;
     justify-content: flex-end;
@@ -247,7 +238,6 @@
     margin-left: auto;
 }
 
-/* فونت کوچک برای تولبار نارنجی این صفحه */
 .ptl-toolbar {
     display: flex;
     align-items: center;
@@ -259,8 +249,7 @@
         font-size: 13px;
     }
 
-    .ptl-toolbar .mud-input-root,
-    .ptl-toolbar .mud-input-slot input {
+    .ptl-toolbar .mud-input-root, .ptl-toolbar .mud-input-slot input {
         font-size: 13px;
     }
 
@@ -275,7 +264,7 @@
     }
 }
 
-/* ===== فوتر ===== */
+/* Footer */
 .app-footer {
     height: var(--app-footer-h);
     background: #c55a11;
@@ -286,4 +275,37 @@
     bottom: 0;
     z-index: 1000;
     pointer-events: none;
+}
+/* اوورلی لودینگ وسط جدول بدون پس‌زمینه سفید */
+.adg-table-wrap {
+    position: relative;
+}
+
+.adg-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+    background: transparent;
+}
+
+.adg-loader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.adg-norec {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: .7;
+    padding: 24px;
+}
+
+.adg-loading-space {
+    height: 48px;
 }

@@ -1,6 +1,10 @@
 ﻿@page "/programs/programtypes"
 @rendermode InteractiveServer
 @using MudBlazor
+@using AdminNeco.Services
+@inject ApiService Api
+@inject ISnackbar Snackbar
+@inject AppState AppState
 
 <MasterDetailResponsive TItem="ProgramTypeDto"
                         ViewportOffset="112"
@@ -11,34 +15,24 @@
                 <div class="ptl-row">
                     <MudText Class="ptl-title">Program Type List</MudText>
                     <div class="grow"></div>
-                    <MudIconButton Icon="@Icons.Material.Outlined.Fullscreen"
+                    <MudIconButton Icon="@Icons.Material.Outlined.Refresh"
                                    Size="Size.Small"
                                    Color="Color.Default"
-                                   Title="Expand" />
+                                   Title="Reload"
+                                   OnClick="@(async ()=> await ReloadAsync())" />
                 </div>
 
                 <div class="ptl-actions">
-                    <MudIconButton Icon="@Icons.Material.Outlined.Edit"
-                                   Size="Size.Small"
-                                   Color="Color.Default"
-                                   Title="Edit"
-                                   OnClick="@EditSelected" />
-                    <MudIconButton Icon="@Icons.Material.Outlined.Add"
-                                   Size="Size.Small"
-                                   Color="Color.Default"
-                                   Title="Add"
-                                   OnClick="@AddNew" />
-                    <MudIconButton Icon="@Icons.Material.Outlined.Delete"
-                                   Size="Size.Small"
-                                   Color="Color.Default"
-                                   Title="Delete"
-                                   OnClick="@DeleteSelected" />
+                    <MudIconButton Icon="@Icons.Material.Outlined.Edit" Size="Size.Small" Color="Color.Default" Title="Edit" OnClick="@EditSelected" />
+                    <MudIconButton Icon="@Icons.Material.Outlined.Add" Size="Size.Small" Color="Color.Default" Title="Add" OnClick="@AddNew" />
+                    <MudIconButton Icon="@Icons.Material.Outlined.Delete" Size="Size.Small" Color="Color.Default" Title="Delete" OnClick="@DeleteSelected" />
                 </div>
             </div>
         </MudPaper>
 
         <AppDataGrid TItem="ProgramTypeDto"
                      Items="ProgramTypeItems"
+                     Loading="@isLoading"
                      @bind-SelectedItem="Selected"
                      SearchText="@SearchText"
                      SearchTextChanged="@(v => SearchText = v)"
@@ -67,6 +61,13 @@
                 <MudTd Class="text-center"> </MudTd>
             </RowTemplate>
         </AppDataGrid>
+
+        @if (!string.IsNullOrWhiteSpace(loadError))
+        {
+            <MudAlert Severity="Severity.Error" Dense="true" Elevation="0" Class="mt-2">
+                @loadError
+            </MudAlert>
+        }
     </ListArea>
 
     <DetailArea>
@@ -109,18 +110,13 @@
     private enum DetailMode { None, Add, Edit }
 
     private string? SearchText;
-    private int mobileTabIndex = 0;            // 0 = List, 1 = Details
+    private int mobileTabIndex = 0;
     private DetailMode detailMode = DetailMode.None;
 
-    private List<ProgramTypeDto> ProgramTypeItems = new()
-    {
-        new() { Id = 1, Name = "Ali_Test edits" },
-        new() { Id = 2, Name = "Construction" },
-        new() { Id = 3, Name = "Engineering" },
-        new() { Id = 4, Name = "Procurement" },
-        new() { Id = 5, Name = "Project" },
-    };
+    private bool isLoading;
+    private string? loadError;
 
+    private List<ProgramTypeDto> ProgramTypeItems = new();
     private ProgramTypeDto? _selected;
     private ProgramTypeDto? Selected
     {
@@ -128,66 +124,76 @@
         set
         {
             _selected = value;
-            if (_selected is not null)
-            {
-                detailMode = DetailMode.Edit;
-                mobileTabIndex = 1;
-            }
-            else
-            {
-                detailMode = DetailMode.None;
-            }
+            if (_selected is not null) { detailMode = DetailMode.Edit; mobileTabIndex = 1; }
+            else detailMode = DetailMode.None;
             StateHasChanged();
         }
     }
 
-    private void OnRowClick(ProgramTypeDto item)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        // setter بالا کافی است
+        if (!firstRender) return;
+
+        // اول هویت را از استوریج/کوکی بیار؛ اگر با تأخیر ست شد، دوباره تست
+        await AppState.TryLoadIdentityFromCookiesAsync();
+        if (string.IsNullOrWhiteSpace(AppState.AuthToken))
+        {
+            await Task.Delay(120);
+            await AppState.TryLoadIdentityFromCookiesAsync();
+        }
+        await ReloadAsync();
     }
+
+    private async Task ReloadAsync()
+    {
+        isLoading = true; loadError = null; StateHasChanged();
+        try
+        {
+            var res = await Api.GetAllProgramTypesAsync();
+            ProgramTypeItems = res ?? new List<ProgramTypeDto>();
+        }
+        catch (Exception ex)
+        {
+            loadError = $"Failed to load Program Types: {ex.Message}";
+            Snackbar.Add(loadError, Severity.Error);
+            ProgramTypeItems = new();
+        }
+        finally
+        {
+            isLoading = false; StateHasChanged();
+        }
+    }
+
+    private void OnRowClick(ProgramTypeDto item) { }
 
     private void EditSelected()
     {
-        // فعلاً هیچ کاری نکند
+        if (Selected is null) return;
+        detailMode = DetailMode.Edit; mobileTabIndex = 1;
     }
 
     private void AddNew()
     {
-        Selected = new ProgramTypeDto();
-        detailMode = DetailMode.Add;
-        mobileTabIndex = 1;
-        StateHasChanged();
+        Selected = new ProgramTypeDto(); detailMode = DetailMode.Add; mobileTabIndex = 1; StateHasChanged();
     }
 
-    private void DeleteSelected()
+    private async void DeleteSelected()
     {
         if (Selected is null) return;
-        // TODO: حذف
+        try
+        {
+            if (await Api.DeleteProgramTypeAsync(Selected.Id))
+            {
+                Snackbar.Add("Deleted.", Severity.Success);
+                Selected = null;
+                await ReloadAsync();
+            }
+            else Snackbar.Add("Delete failed.", Severity.Error);
+        }
+        catch (Exception ex) { Snackbar.Add($"Delete failed: {ex.Message}", Severity.Error); }
     }
 
-    private Task OnNameChanged(string value)
-    {
-        if (Selected is not null) Selected.Name = value;
-        return Task.CompletedTask;
-    }
-
-    private Task OnDescChanged(string value)
-    {
-        if (Selected is not null) Selected.Description = value;
-        return Task.CompletedTask;
-    }
-
-    private void CloseDetails()
-    {
-        detailMode = DetailMode.None;
-        Selected = null;
-        mobileTabIndex = 0;
-    }
-
-    public class ProgramTypeDto
-    {
-        public int Id { get; set; }
-        public string? Name { get; set; }
-        public string? Description { get; set; }
-    }
+    private Task OnNameChanged(string value) { if (Selected is not null) Selected.Name = value; return Task.CompletedTask; }
+    private Task OnDescChanged(string value) { if (Selected is not null) Selected.Description = value; return Task.CompletedTask; }
+    private void CloseDetails() { detailMode = DetailMode.None; Selected = null; mobileTabIndex = 0; }
 }

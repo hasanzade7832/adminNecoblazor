@@ -12,7 +12,7 @@
     <ImportMap />
     <link rel="icon" type="image/png" href="favicon.png" />
     <link href="_content/MudBlazor/MudBlazor.min.css" rel="stylesheet" />
-    <HeadOutlet @rendermode="InteractiveServer" />
+    <HeadOutlet />
     <meta name="api-base" content="@Configuration["Api:BaseUrl"]" />
     <link href="css/login.css" rel="stylesheet" />
     <link href="css/Navmenu.css" rel="stylesheet" />
@@ -22,6 +22,8 @@
 
 <body>
     <Routes @rendermode="InteractiveServer" />
+    <!-- اسکریپت‌ها -->
+    <script src="/js/auth.js"></script>
     <script src="_framework/blazor.web.js"></script>
     <script src="_content/MudBlazor/MudBlazor.min.js"></script>
 </body>

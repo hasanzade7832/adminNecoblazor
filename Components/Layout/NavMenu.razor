@@ -133,11 +133,24 @@
     {
         if (string.IsNullOrWhiteSpace(href)) return;
 
-        // هم‌زمان تب مناسب مقصد را فعال کن
-        var idx = CategoryIndexForPath((href ?? "").Trim('/').ToLowerInvariant());
+        var currentRel = GetCurrentPath();
+        var targetRel = (href ?? "").Trim('/').ToLowerInvariant();
+
+        // تب مقصد را هم‌زمان فعال کن
+        var idx = CategoryIndexForPath(targetRel);
         if (idx >= 0) activeCat = idx;
 
-        Nav.NavigateTo(href);
+        // ✅ اگر روی همان مسیر کلیک شد، با یک کوئری‌پارام پنهان ریفِرش داخلی انجام می‌دهیم (بدون forceLoad)
+        if (currentRel == targetRel)
+        {
+            var sep = href.Contains('?') ? '&' : '?';
+            var hrefWithPing = $"{href}{sep}_={DateTimeOffset.UtcNow.ToUnixTimeSeconds()}";
+            Nav.NavigateTo(hrefWithPing, replace: false);
+        }
+        else
+        {
+            Nav.NavigateTo(href);
+        }
     }
 
     private bool IsActive(string href)

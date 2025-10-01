@@ -11,112 +11,50 @@
 
 <div class="login-page @( _lang == "Fa" ? "rtl" : "" )">
     <MudPaper Class="login-card" Elevation="0" Square="true">
-
-        <!-- بالای کارت: زبان + لوگو -->
         <div class="card-chrome">
-            <MudSelect T="string"
-                       @bind-Value="_lang"
-                       Variant="Variant.Text"
-                       Dense="true"
-                       Class="lang-select"
-                       DisableUnderLine="true">
+            <MudSelect T="string" @bind-Value="_lang" Variant="Variant.Text" Dense="true" Class="lang-select" DisableUnderLine="true">
                 @foreach (var item in _languages)
                 {
                     <MudSelectItem T="string" Value="@item.Code">@item.Title</MudSelectItem>
                 }
             </MudSelect>
-
             <img src="img/logo.svg" alt="logo" class="brand-logo" />
         </div>
 
-        <!-- فرم -->
         <MudForm @ref="_form" Model="_vm" Class="login-form">
-            <MudTextField T="string"
-                          @bind-Value="_vm.UserName"
-                          Label="@L("Username")"
-                          Variant="Variant.Text"
-                          Required="true"
-                          DisableUnderLine="true"
-                          Placeholder=" "
-                          Class="line-field"
-                          Adornment="Adornment.Start"
-                          AdornmentIcon="@Icons.Material.Outlined.Person" />
-
+            <MudTextField T="string" @bind-Value="_vm.UserName" Label="@L("Username")" Variant="Variant.Text" Required="true" DisableUnderLine="true" Placeholder=" " Class="line-field" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.Person" />
             <div class="password-wrap">
                 <div class="field-box">
-                    <MudTextField T="string"
-                                  @bind-Value="_password"
-                                  Label="@L("Password")"
-                                  Variant="Variant.Text"
-                                  Required="true"
-                                  DisableUnderLine="true"
-                                  Placeholder=" "
-                                  Class="line-field pr-eye"
-                                  Adornment="Adornment.Start"
-                                  AdornmentIcon="@Icons.Material.Outlined.VpnKey"
-                                  InputType="@(_showPwd ? InputType.Text : InputType.Password)" />
-                    <MudIconButton Class="eye-abs"
-                                   DisableRipple="true"
-                                   Icon="@(_showPwd ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)"
-                                   OnClick="@(()=> _showPwd = !_showPwd)" />
+                    <MudTextField T="string" @bind-Value="_password" Label="@L("Password")" Variant="Variant.Text" Required="true" DisableUnderLine="true" Placeholder=" " Class="line-field pr-eye" Adornment="Adornment.Start" AdornmentIcon="@Icons.Material.Outlined.VpnKey" InputType="@(_showPwd ? InputType.Text : InputType.Password)" />
+                    <MudIconButton Class="eye-abs" DisableRipple="true" Icon="@(_showPwd ? Icons.Material.Filled.VisibilityOff : Icons.Material.Filled.Visibility)" OnClick="@(()=> _showPwd = !_showPwd)" />
                 </div>
             </div>
 
-            <MudButton OnClick="HandleLogin"
-                       ButtonType="ButtonType.Button"
-                       Disabled="@_busy"
-                       Class="btn-login">
+            <MudButton OnClick="HandleLogin" ButtonType="ButtonType.Button" Disabled="@_busy" Class="btn-login">
                 @(_busy ? L("PleaseWait") : L("Login"))
             </MudButton>
         </MudForm>
 
         <div class="card-footer">
             <span class="date">@_today</span>
-            <MudIconButton Icon="@Icons.Material.Outlined.Settings"
-                           Variant="Variant.Text"
-                           Class="gear-btn" />
+            <MudIconButton Icon="@Icons.Material.Outlined.Settings" Variant="Variant.Text" Class="gear-btn" />
         </div>
     </MudPaper>
 </div>
 
 @code {
     private MudForm? _form;
-
     private class VM { public string UserName { get; set; } = ""; }
     private VM _vm = new();
 
     private string _password = "";
     private bool _busy;
     private bool _showPwd;
-    private bool _tokenReady;
-
-    // زبان
-    private string _lang = "En";
-    private readonly (string Code, string Title)[] _languages =
-    {
-        ("En", "English"),
-        ("Fa", "فارسی")
-    };
 
     private string _today = DateTime.Now.ToString("yyyy.MM.dd");
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            try
-            {
-                // ⛳️ آماده‌سازی سشن/کوکی بک‌اند (از مشکلات چند-بار کلیک جلوگیری می‌کند)
-                await Api.TokenSetupAsync();
-                _tokenReady = true;
-            }
-            catch
-            {
-                _tokenReady = false; // در HandleLogin هم fail-safe داریم
-            }
-            StateHasChanged();
-        }
-    }
+    private string _lang = "En";
+    private readonly (string Code, string Title)[] _languages = { ("En", "English"), ("Fa", "فارسی") };
 
     private async Task HandleLogin()
     {
@@ -124,16 +62,8 @@
         if (!_form.IsValid) return;
 
         _busy = true;
-        StateHasChanged();
-
         try
         {
-            // fail-safe: اگر به هر دلیل هنوز token setup نشده بود، همین‌جا هم تلاش کن
-            if (!_tokenReady)
-            {
-                try { await Api.TokenSetupAsync(); _tokenReady = true; } catch { /* ignore */ }
-            }
-
             var req = new WebLoginRequest
                 {
                     UserName = _vm.UserName,
@@ -143,11 +73,29 @@
 
             var res = await Api.WebLoginAsync(req);
 
-            // معیار موفقیت: یا Token برگشته یا MyUser پر است
-            if (res is not null && (!string.IsNullOrWhiteSpace(res.Token) || res.MyUser is not null))
+            // token از چند جا: Token یا MyUser.TTKK یا TokenSetup
+            string? token = res?.Token ?? res?.MyUser?.TTKK;
+            if (string.IsNullOrWhiteSpace(token))
             {
-                Snackbar.Add(L("LoginOk"), Severity.Success);
+                var ts = await Api.TokenSetupAsync();
+                if (ts is not null && ts.data != 0) token = ts.data.ToString();
+            }
+
+            // ★★ نام‌کاربری برای هدر: ترجیحاً از پاسخ، وگرنه ورودی فرم
+            var username = res?.MyUser?.Username;
+            if (string.IsNullOrWhiteSpace(username))
+                username = _vm.UserName;
+
+            // اگر کوکی هم بود ولی token خالی بود، از کوکی دریافت کن
+            if (string.IsNullOrWhiteSpace(token))
+                await AppState.TryLoadIdentityFromCookiesAsync();
+            else
+                await AppState.SetAuthIdentityAsync(token, username);
+
+            if (res is not null || !string.IsNullOrWhiteSpace(AppState.AuthToken))
+            {
                 await AppState.SetLoggedInAsync(true);
+                Snackbar.Add(L("LoginOk"), Severity.Success);
                 Nav.NavigateTo("/home", replace: true);
             }
             else
@@ -166,57 +114,45 @@
         finally
         {
             _busy = false;
-            StateHasChanged();
         }
     }
 
-    // لوکالایز ساده
-    private string L(string key)
-    {
-        if (_lang == "Fa")
-        {
-            return key switch
-            {
-                "Language" => "زبان",
-                "SelectLanguage" => "انتخاب زبان",
-                "ChooseInterfaceLanguage" => "زبان رابط کاربری را انتخاب کنید",
-                "Username" => "نام کاربری",
-                "Password" => "رمز عبور",
-                "PleaseWait" => "لطفاً صبر کنید...",
-                "Login" => "ورود",
-                "LoginOk" => "ورود موفق",
-                "LoginFailedEmpty" => "ورود ناموفق (پاسخ خالی)",
-                "NetworkError" => "خطای شبکه",
-                _ => key
-            };
-        }
-        else
-        {
-            return key switch
-            {
-                "Language" => "Language",
-                "SelectLanguage" => "Select language",
-                "ChooseInterfaceLanguage" => "Choose interface language",
-                "Username" => "Username",
-                "Password" => "Password",
-                "PleaseWait" => "PLEASE WAIT...",
-                "Login" => "Login",
-                "LoginOk" => "Login OK",
-                "LoginFailedEmpty" => "Login failed (empty response)",
-                "NetworkError" => "Network error",
-                _ => key
-            };
-        }
-    }
 
-    // هش پسورد
+    private string L(string key) => _lang == "Fa"
+        ? key switch
+        {
+            "Language" => "زبان",
+            "SelectLanguage" => "انتخاب زبان",
+            "ChooseInterfaceLanguage" => "زبان رابط کاربری را انتخاب کنید",
+            "Username" => "نام کاربری",
+            "Password" => "رمز عبور",
+            "PleaseWait" => "لطفاً صبر کنید...",
+            "Login" => "ورود",
+            "LoginOk" => "ورود موفق",
+            "LoginFailedEmpty" => "ورود ناموفق (پاسخ خالی)",
+            "NetworkError" => "خطای شبکه",
+            _ => key
+        }
+        : key switch
+        {
+            "Language" => "Language",
+            "SelectLanguage" => "Select language",
+            "ChooseInterfaceLanguage" => "Choose interface language",
+            "Username" => "Username",
+            "Password" => "Password",
+            "PleaseWait" => "PLEASE WAIT...",
+            "Login" => "Login",
+            "LoginOk" => "Login OK",
+            "LoginFailedEmpty" => "Login failed (empty response)",
+            "NetworkError" => "Network error",
+            _ => key
+        };
+
     static string ShaHex(string s)
     {
         using var sha = System.Security.Cryptography.SHA512.Create();
         return Convert.ToHexString(sha.ComputeHash(System.Text.Encoding.UTF8.GetBytes(s))).ToLowerInvariant();
     }
-
-    // کلید ترتیبی
     static string GenSeq()
     {
         var d = DateTime.UtcNow;

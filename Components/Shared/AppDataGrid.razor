@@ -24,32 +24,45 @@
                   Class="adg-table"
                   Clickable="true"
                   RowStyleFunc="GetRowStyle"
-                  @bind-SelectedItem="SelectedInternal">
+                  @bind-SelectedItem="SelectedInternal"
+                  Loading="@Loading">
 
             <HeaderContent>
                 @HeaderContent
             </HeaderContent>
 
-            <RowTemplate>
+            <RowTemplate Context="row">
                 @if (RowTemplate is not null)
                 {
-                    @RowTemplate(context)
+                    @RowTemplate(row)
                 }
             </RowTemplate>
 
             <NoRecordsContent>
-                <MudText Class="p-4 opacity-70">No records</MudText>
+                <div class="adg-norec">No records</div>
             </NoRecordsContent>
+
+            <LoadingContent>
+                <div class="adg-loading-space"></div>
+            </LoadingContent>
         </MudTable>
+
+        @if (Loading)
+        {
+            <div class="adg-overlay">
+                <div class="adg-loader">
+                    <MudProgressCircular Indeterminate="true" />
+                    <MudText>Loading…</MudText>
+                </div>
+            </div>
+        }
     </div>
 </MudPaper>
 
 @code {
     [Parameter] public IEnumerable<TItem>? Items { get; set; }
-
     [Parameter] public RenderFragment? ToolbarContent { get; set; }
     [Parameter] public RenderFragment? RightContent { get; set; }
-
     [Parameter] public RenderFragment? HeaderContent { get; set; }
     [Parameter] public RenderFragment<TItem>? RowTemplate { get; set; }
 
@@ -57,12 +70,11 @@
     [Parameter] public EventCallback<string?> SearchTextChanged { get; set; }
     [Parameter] public Func<TItem, string>? SearchKeySelector { get; set; }
 
-    /* بایند انتخاب سطر برای والد */
     [Parameter] public TItem? SelectedItem { get; set; }
     [Parameter] public EventCallback<TItem?> SelectedItemChanged { get; set; }
-
-    /* برای سازگاری با گذشته: در صورت نیاز همچنان event بیرونی */
     [Parameter] public EventCallback<TItem> OnRowClick { get; set; }
+
+    [Parameter] public bool Loading { get; set; }
 
     private IEnumerable<TItem> FilteredItems =>
         (Items ?? Enumerable.Empty<TItem>())
